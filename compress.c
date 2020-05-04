@@ -1016,7 +1016,7 @@ int producerCount = 0, consumerCount = 0;
 
 
 void *produce(void *arg) { 
-	int i;
+	unsigned int i;
 	struct timespec t1, t2;
 	double thread1_work = 0.0;
 
