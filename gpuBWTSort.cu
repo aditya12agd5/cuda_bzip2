@@ -241,9 +241,9 @@ int gpuBlockSort(UChar *block, UInt32 *order, UInt32 *orderFirstSort, UInt32 *or
 	unsigned int *d_array_index_out = thrust::raw_pointer_cast(&d_index[0]);
 	unsigned int *d_array_string_out = thrust::raw_pointer_cast(&d_stencil[0]);
 
-	cudaThreadSynchronize();
+	cudaDeviceSynchronize();
 	pack4CharsToInt<<<grid1, threads1, 0>>>(d_original_string_in, global_int_original_string, d_array_string_out, d_array_index_out, global_first_sort_rank, originalLength);
-	cudaThreadSynchronize();
+	cudaDeviceSynchronize();
 
 	if(includeLast == 1) { 
 		int lastIndex = originalLength - 1;
@@ -312,22 +312,22 @@ int gpuBlockSort(UChar *block, UInt32 *order, UInt32 *orderFirstSort, UInt32 *or
 		dim3 grid(numBlocks, 1, 1);
 		dim3 threads(numThreadsPerBlock, 1, 1); 
 
-          	cudaThreadSynchronize();
+          	cudaDeviceSynchronize();
 	
 		findSuccessor<<<grid, threads, 0>>>(global_int_original_string, d_array_string, d_array_index, d_array_segment, d_array_stencil, d_array_map, length, originalLength, sequenceCount);
 	
-	        cudaThreadSynchronize();
+	        cudaDeviceSynchronize();
 
 
 	        thrust::copy(d_stencil.begin(), d_stencil.begin() + length, d_string.begin());
 
 	        thrust::inclusive_scan(d_map.begin(),d_map.begin() + length, d_segment.begin());
 
-	        cudaThreadSynchronize();
+	        cudaDeviceSynchronize();
  
 	        eliminateSizeOneKernel1<<<grid, threads, 0>>>( global_int_original_string, d_array_final_index, d_array_index, d_array_static_index, d_array_map, d_array_stencil, global_first_sort_rank, sequenceCount, length, originalLength);
  
-                cudaThreadSynchronize();
+                cudaDeviceSynchronize();
 		
 		thrust::exclusive_scan(d_stencil.begin(), d_stencil.begin() + length, d_map.begin());
 
@@ -383,18 +383,18 @@ int gpuBlockSort(UChar *block, UInt32 *order, UInt32 *orderFirstSort, UInt32 *or
 			dim3 grid(numBlocks, 1, 1);
 			dim3 threads(numThreadsPerBlock, 1, 1); 
 
-			cudaThreadSynchronize();
+			cudaDeviceSynchronize();
 
 			updateSegments<<<grid, threads, 0>>>(global_int_original_string, d_array_index, d_array_segment, d_array_map, size, offset, length, originalLength);
 
-			cudaThreadSynchronize();
+			cudaDeviceSynchronize();
 
 			thrust::inclusive_scan(d_map.begin(), d_map.begin() + size, d_segment.begin());
 
-			cudaThreadSynchronize();
+			cudaDeviceSynchronize();
 
 			eliminateSizeOne<<<grid, threads, 0>>>( d_array_final_index, d_array_index, d_array_static_index, d_array_map, d_array_stencil, global_first_sort_rank, size, originalLength);
-			cudaThreadSynchronize();
+			cudaDeviceSynchronize();
 
 			thrust::exclusive_scan(d_stencil.begin(), d_stencil.begin() + size, d_map.begin());
 
@@ -448,9 +448,9 @@ int gpuBlockSort(UChar *block, UInt32 *order, UInt32 *orderFirstSort, UInt32 *or
 	unsigned int *d_array_second_sort_rank = thrust::raw_pointer_cast(&d_second_sort_rank[0]); 
 	unsigned int *d_array_second_sort_index = thrust::raw_pointer_cast(&d_second_sort_index[0]); 
 
-	cudaThreadSynchronize();
+	cudaDeviceSynchronize();
 	createSecondSort<<<grid, threads, 0>>>(d_original_string_in, global_first_sort_rank, d_array_second_sort, d_array_second_sort_rank, d_array_second_sort_index, secondSortLength);
-	cudaThreadSynchronize();
+	cudaDeviceSynchronize();
 
 	thrust::sort_by_key(
 		thrust::make_zip_iterator( thrust::make_tuple(d_second_sort.begin(), d_second_sort_rank.begin())),
